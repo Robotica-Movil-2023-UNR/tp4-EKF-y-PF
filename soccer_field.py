@@ -55,17 +55,30 @@ class Field:
         prev_x, prev_y, prev_theta = x.ravel()
         rot1, trans, rot2 = u.ravel()
         # YOUR IMPLEMENTATION HERE
+        return np.array([1,0, -trans*np.sin(prev_theta + rot1),
+                         0,1, trans*np.cos(prev_theta + rot1),
+                         0,0,1]).reshape((3,3))
 
     def V(self, x, u):
         """Compute the Jacobian of the dynamics with respect to the control."""
         prev_x, prev_y, prev_theta = x.ravel()
         rot1, trans, rot2 = u.ravel()
         # YOUR IMPLEMENTATION HERE
+        return np.array([ -trans * np.sin(prev_theta + rot1), np.cos(prev_theta + rot1), 0,
+                         trans * np.cos(prev_theta + rot1), np.sin(prev_theta + rot1), 0,
+                         0, 0, 1]).reshape(3,3)
 
     def H(self, x, marker_id):
         """Compute the Jacobian of the observation with respect to the state."""
         prev_x, prev_y, prev_theta = x.ravel()
         # YOUR IMPLEMENTATION HERE
+        q = np.square(self.MARKER_X_POS[marker_id] - prev_x) + np.square(self.MARKER_Y_POS[marker_id] - prev_y)
+        return np.array([-(self.MARKER_X_POS[marker_id] - prev_x)/np.sqrt(q),
+                        -(self.MARKER_Y_POS[marker_id] - prev_y)/np.sqrt(q),
+                        0,
+                        -(self.MARKER_Y_POS[marker_id] - prev_y)/q,
+                        (self.MARKER_X_POS[marker_id] - prev_x)/q,
+                        -1 ]).reshape(2,3)
 
     def forward(self, x, u):
         """Compute next state, given current state and action.
