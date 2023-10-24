@@ -39,7 +39,6 @@ def localize(env, policy, filt, x0, num_steps, plot=False):
             mean, cov = x_real, np.eye(3)
         else:
             # filters only know the action and observation
-            print(i)
             mean, cov = filt.update(env, u_noisefree, z_real, marker_id)
         states_filter[i+1, :] = mean.ravel()
 

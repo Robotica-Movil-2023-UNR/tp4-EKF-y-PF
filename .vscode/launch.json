@@ -12,7 +12,7 @@
             "program": "localization.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args" : ["--plot", "ekf", "--seed", "0", "--data-factor", "1", "--num-steps", "200", "--filter-factor", "0.5"]
+            "args" : ["--plot", "ekf", "--seed", "0", "--data-factor", "1", "--num-steps", "200", "--filter-factor", "1"]
         }
     ]
 }
