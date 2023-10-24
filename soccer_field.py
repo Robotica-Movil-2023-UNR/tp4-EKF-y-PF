@@ -73,12 +73,9 @@ class Field:
         prev_x, prev_y, prev_theta = x.ravel()
         # YOUR IMPLEMENTATION HERE
         q = np.square(self.MARKER_X_POS[marker_id] - prev_x) + np.square(self.MARKER_Y_POS[marker_id] - prev_y)
-        return np.array([-(self.MARKER_X_POS[marker_id] - prev_x)/np.sqrt(q),
-                        -(self.MARKER_Y_POS[marker_id] - prev_y)/np.sqrt(q),
-                        0,
-                        -(self.MARKER_Y_POS[marker_id] - prev_y)/q,
-                        (self.MARKER_X_POS[marker_id] - prev_x)/q,
-                        -1 ]).reshape(2,3)
+        return np.array([(self.MARKER_Y_POS[marker_id] - prev_y)/q,
+                        -(self.MARKER_X_POS[marker_id] - prev_x)/q,
+                        -1 ]).reshape(1,3)
 
     def forward(self, x, u):
         """Compute next state, given current state and action.
@@ -179,14 +176,27 @@ class Field:
         for i in range(num_steps):
             t = i * dt
 
+            # Obtengo las acciones sin ruido, están harcodeadas para que el 
+            # robot haga un rectángulo
             u_noisefree = policy(x_real, t)
+            # Usando esas acciones calculo el estado sin ruido
             x_noisefree = self.forward(x_noisefree, u_noisefree)
-
+            
+            # Las acciones reales son afectadas por los parámetros alpha
+            # para obtener los comandos reales. Esto suena raro
+            # ESTO NO SERIA LA ODOMETRIA???? Es obtener lo que mediría un sensor especial
+            # en las ruedas que devuelve d_rot1, d_trans y d_rot2?
             u_real = self.sample_noisy_action(u_noisefree)
+            # El estado real es propagando las "acciones" reales o 
+            # integrando la odometría
             x_real = self.forward(x_real, u_real)
 
+            # El robot ve de a un marker por vez, nunca ve mas de 1
             marker_id = self.get_marker_id(i)
+            # Esta es la medición del sensor exoceptivo.
+            # Me dice cuál es el bearing al landmark estando en la posición real actual
             z_noisefree = self.observe(x_real, marker_id)
+            # Esto es agregando a la medicion anterior el ruido propio del sensor
             z_real = self.sample_noisy_observation(x_real, marker_id)
 
             states_noisefree[i, :] = x_noisefree.ravel()

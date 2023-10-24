@@ -14,6 +14,9 @@ from pf import ParticleFilter
 
 def localize(env, policy, filt, x0, num_steps, plot=False):
     # Collect data from an entire rollout
+    # Esto corre una simulación completa para poder llenar los arrays con datos
+    # Simula el recorrido del vehículo y obtiene la lectura del sensor de odometría
+    # y del sensor de bearing. 
     states_noisefree, states_real, action_noisefree, obs_noisefree, obs_real = \
             env.rollout(x0, policy, num_steps)
     states_filter = np.zeros(states_real.shape)
@@ -36,6 +39,7 @@ def localize(env, policy, filt, x0, num_steps, plot=False):
             mean, cov = x_real, np.eye(3)
         else:
             # filters only know the action and observation
+            print(i)
             mean, cov = filt.update(env, u_noisefree, z_real, marker_id)
         states_filter[i+1, :] = mean.ravel()
 
@@ -43,7 +47,10 @@ def localize(env, policy, filt, x0, num_steps, plot=False):
             fig.clear()
             plot_field(env, marker_id)
             plot_robot(env, x_real, z_real)
+            # El state_noisefree es el recorrido deseado con los comandos entregados
             plot_path(env, states_noisefree[:i+1, :], 'g', 0.5)
+            # Si los alphas son != 0 entonces el robot no es ideal y el recorrido será otro
+            # el state_real es lo que mide el sensor de odometría
             plot_path(env, states_real[:i+1, :], 'b')
             if filt is not None:
                 plot_path(env, states_filter[:i+1, :2], 'r')
