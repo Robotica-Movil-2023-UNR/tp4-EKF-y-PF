@@ -31,11 +31,10 @@ class ExtendedKalmanFilter:
 
         prev_x, prev_y, prev_theta = u.ravel()
         q = np.square(env.MARKER_X_POS[marker_id] - prev_x) + np.square(env.MARKER_Y_POS[marker_id] - prev_y)
-        z_hat = np.array([np.sqrt(q),
-                          minimized_angle(
+        z_hat = np.array([ minimized_angle(
                               np.arctan2(env.MARKER_Y_POS[marker_id] - prev_y,
                                          env.MARKER_X_POS[marker_id] - prev_x)
-                                         - prev_theta)]).reshape(2,1)
+                                         - prev_theta)]).reshape(1,1)
         H = env.H(u, marker_id)
 
         print("mu", self.mu)
