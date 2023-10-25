@@ -66,7 +66,7 @@ class Field:
         # YOUR IMPLEMENTATION HERE
         return np.array([ -trans * np.sin(prev_theta + rot1), np.cos(prev_theta + rot1), 0,
                          trans * np.cos(prev_theta + rot1), np.sin(prev_theta + rot1), 0,
-                         0, 0, 1]).reshape(3,3)
+                         1, 0, 1]).reshape(3,3)
 
     def H(self, x, marker_id):
         """Compute the Jacobian of the observation with respect to the state."""

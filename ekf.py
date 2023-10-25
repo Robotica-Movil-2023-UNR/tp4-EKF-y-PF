@@ -31,7 +31,7 @@ class ExtendedKalmanFilter:
 
         # Ejecuto el paso de predición, tomando la estimación actual y el comando, sin ruido
         # O VA CON RUIDO???????????
-        u_noisy = env.sample_noisy_action(u, self.alphas)
+        # u_noisy = env.sample_noisy_action(u, self.alphas)
         mu_pred = env.forward(self.mu, u)
         # Jacobiano del modelo de odometría respecto del estado
         G = env.G(self.mu, u)
