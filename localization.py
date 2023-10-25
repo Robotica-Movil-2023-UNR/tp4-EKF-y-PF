@@ -114,7 +114,7 @@ if __name__ == '__main__':
     if args.seed is not None:
         np.random.seed(args.seed)
 
-    alphas = np.array([0.0005**2, 0.001**2, 0.01**2, 0.001**2])
+    alphas = np.array([0.05**2, 0.005**2, 0.1**2, 0.01**2])
     beta = np.diag([np.deg2rad(5)**2])
 
     env = Field(args.data_factor * alphas, args.data_factor * beta)

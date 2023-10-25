@@ -29,26 +29,36 @@ class ExtendedKalmanFilter:
         """
         # YOUR IMPLEMENTATION HERE
 
-        prev_x, prev_y, prev_theta = u.ravel()
-        q = np.square(env.MARKER_X_POS[marker_id] - prev_x) + np.square(env.MARKER_Y_POS[marker_id] - prev_y)
-        z_hat = np.array([ minimized_angle(
-                              np.arctan2(env.MARKER_Y_POS[marker_id] - prev_y,
-                                         env.MARKER_X_POS[marker_id] - prev_x)
-                                         - prev_theta)]).reshape(1,1)
+        # Ejecuto el paso de predición, tomando la estimación actual y el comando, sin ruido
+        # O VA CON RUIDO???????????
+        u_noisy = env.sample_noisy_action(u, self.alphas)
+        mu_pred = env.forward(self.mu, u)
+        # Jacobiano del modelo de odometría respecto del estado
+        G = env.G(self.mu, u)
+        # Jacobiano del modelo de odometría respecto del control
+        V = env.V(self.mu, u)
+        # Matriz de covarianzas de las acciones de control
+        M = env.noise_from_motion(u, self.alphas)
+        # Caluclo el ruido devido al control y al movimiento
+        sigma_pred = G.dot(self.sigma).dot(G.T) + V.dot(M).dot(V.T)
+        
+        # Calculo las mediciones esperadas
+        z_hat = env.observe(mu_pred, marker_id)
+        # El jacobiano de las mediciones
         H = env.H(u, marker_id)
 
-        print("mu", self.mu)
-        print("beta", self.beta)
-        print("alphas", self.alphas)
-        print("sigma", self.sigma)
-        print("u: ", u)
-        print("z: ", z)
-        print("H: ", H)
+        S = H.dot(sigma_pred).dot(H.T) + self.beta
+        # Ganancia del filtro
+        K = sigma_pred.dot(H.T).dot(np.linalg.inv(S))
+        # Calculo el estado y las covarianzas correjidas
+        # print(z.ravel(), z_hat.ravel(), z - z_hat)
+        innovation = minimized_angle(z - z_hat)
+        mu_corrected = mu_pred + K.dot(innovation)
+        sigma_corrected = (np.eye(3) - K.dot(H)).dot(sigma_pred)
 
-        S = H.dot(self.sigma).dot(H.T) + self.beta
-        K = self.sigma.dot(H.T).dot(np.linalg.inv(S))
-
-        self.mu = self.mu + K.dot(z - z_hat)
-        self.sigma = (np.eye(3) - K.dot(H)).dot(self.sigma)
+        self.mu = mu_pred
+        self.sigma = sigma_pred
+        self.mu = mu_corrected
+        self.sigma = sigma_corrected
 
         return self.mu, self.sigma
