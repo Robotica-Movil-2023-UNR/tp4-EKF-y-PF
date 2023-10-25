@@ -73,12 +73,10 @@ class Field:
         prev_x, prev_y, prev_theta = x.ravel()
         # YOUR IMPLEMENTATION HERE
         q = np.square(self.MARKER_X_POS[marker_id] - prev_x) + np.square(self.MARKER_Y_POS[marker_id] - prev_y)
-        return np.array([-(self.MARKER_X_POS[marker_id] - prev_x)/np.sqrt(q),
-                        -(self.MARKER_Y_POS[marker_id] - prev_y)/np.sqrt(q),
-                        0,
+        return np.array([
                         -(self.MARKER_Y_POS[marker_id] - prev_y)/q,
                         (self.MARKER_X_POS[marker_id] - prev_x)/q,
-                        -1 ]).reshape(2,3)
+                        -1 ]).reshape(1,3)
 
     def forward(self, x, u):
         """Compute next state, given current state and action.
