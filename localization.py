@@ -114,6 +114,7 @@ def setup_parser():
 
 if __name__ == '__main__':
     args = setup_parser().parse_args()
+    print(args)
     print('Data factor:', args.data_factor)
     print('Filter factor:', args.filter_factor)
 
