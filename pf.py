@@ -32,6 +32,49 @@ class ParticleFilter:
         marker_id: landmark ID
         """
         # YOUR IMPLEMENTATION HERE
+
+        # generate new particle set after motion update
+        new_particles = np.zeros((self.num_particles, 3))
+        idx = 0
+        for particle in self.particles:
+            #sample noisy motions
+            noisy_delta_rot1, noisy_delta_trans, noisy_delta_rot2 = env.sample_noisy_action(u, self.alphas)
+            #calculate new particle pose
+            new_particle = np.array([particle[0] + noisy_delta_trans * np.cos(particle[2] + noisy_delta_rot1), 
+                                    particle[1] + noisy_delta_trans * np.sin(particle[2] + noisy_delta_rot1),
+                                    particle[2] + noisy_delta_rot1 + noisy_delta_rot2])
+            new_particles[idx] = new_particle.reshape(1,3)
+            idx += 1
+
+        # Given z as the angle to marker_id, calculate the expected observation
+        # for each particle
+        z_hat = np.zeros((self.num_particles, 1))
+        idx = 0
+        for particle in new_particles:
+            z_hat[idx] = env.observe(particle, marker_id)
+            idx += 1
+        
+        # Compute the difference between the actual and expected observation
+        diff = np.zeros((self.num_particles, 1))
+        idx = 0
+        for particle in new_particles:
+            diff[idx] = minimized_angle(z - z_hat[idx])
+            idx += 1
+
+        # Compute the weight for each particle using the Gaussian distribution
+        idx = 0
+        for particle in new_particles:
+            self.weights[idx] = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * (diff[idx] ** 2))
+            idx += 1
+        
+        
+
+        # Normalize the weights
+        self.weights /= np.sum(self.weights)
+
+        # Resample particles
+        self.particles, self.weights = self.resample(self.particles, self.weights)
+
         mean, cov = self.mean_and_variance(self.particles)
         return mean, cov
 
@@ -44,6 +87,22 @@ class ParticleFilter:
         """
         new_particles, new_weights = particles, weights
         # YOUR IMPLEMENTATION HERE
+
+        n = len(particles)
+        indices = np.arange(n)
+        new_particles = np.zeros_like(particles)
+        new_weights = np.ones(n) / n
+        r = np.random.uniform(0, 1 / n)
+        c = weights[0]
+        i = 0
+
+        for m in range(n):
+            u = r + m * (1 / n)
+            while u > c:
+                i += 1
+                c += weights[i]
+
+            new_particles[m] = particles[i]
         return new_particles, new_weights
 
     def mean_and_variance(self, particles):
@@ -62,5 +121,16 @@ class ParticleFilter:
         for i in range(zero_mean.shape[0]):
             zero_mean[i, 2] = minimized_angle(zero_mean[i, 2])
         cov = np.dot(zero_mean.T, zero_mean) / self.num_particles
+
+        # Check the condition of the covariance matrix
+        condition_number = np.linalg.cond(cov)
+
+        # Set a threshold for the condition number
+        condition_threshold = 1e-12  # Adjust this threshold as needed
+
+        if condition_number > condition_threshold:
+            # If the covariance matrix is ill-conditioned, set it to the identity matrix
+            print("Badly conditioned covariance matrix (setting to identity):", condition_number)
+            cov = np.identity(3)  # Replace with the appropriate dimension
 
         return mean.reshape((-1, 1)), cov
