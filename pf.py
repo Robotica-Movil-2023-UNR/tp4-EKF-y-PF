@@ -38,7 +38,7 @@ class ParticleFilter:
         idx = 0
         for particle in self.particles:
             #sample noisy motions
-            noisy_delta_rot1, noisy_delta_trans, noisy_delta_rot2 = env.sample_noisy_action(u, self.alphas)
+            noisy_delta_rot1, noisy_delta_trans, noisy_delta_rot2 = env.sample_noisy_action(u, self.alphas.ravel())
             #calculate new particle pose
             new_particle = np.array([particle[0] + noisy_delta_trans * np.cos(particle[2] + noisy_delta_rot1), 
                                     particle[1] + noisy_delta_trans * np.sin(particle[2] + noisy_delta_rot1),
@@ -49,26 +49,18 @@ class ParticleFilter:
         # Given z as the angle to marker_id, calculate the expected observation
         # for each particle
         z_hat = np.zeros((self.num_particles, 1))
-        idx = 0
-        for particle in new_particles:
-            z_hat[idx] = env.observe(particle, marker_id)
-            idx += 1
-        
-        # Compute the difference between the actual and expected observation
         diff = np.zeros((self.num_particles, 1))
         idx = 0
         for particle in new_particles:
-            diff[idx] = minimized_angle(z - z_hat[idx])
-            idx += 1
+            z_hat[idx] = env.observe(particle, marker_id)
 
-        # Compute the weight for each particle using the Gaussian distribution
-        idx = 0
-        for particle in new_particles:
+            # Compute the difference between the actual and expected observation
+            diff[idx] = minimized_angle(z - z_hat[idx])
+
+            # Compute the weight for each particle using the Gaussian distribution
             self.weights[idx] = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * (diff[idx] ** 2))
             idx += 1
         
-        
-
         # Normalize the weights
         self.weights /= np.sum(self.weights)
 
