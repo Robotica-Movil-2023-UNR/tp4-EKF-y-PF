@@ -65,7 +65,7 @@ class ParticleFilter:
         self.weights /= np.sum(self.weights)
 
         # Resample particles
-        self.particles, self.weights = self.resample(self.particles, self.weights)
+        self.particles, self.weights = self.resample(new_particles, self.weights)
 
         mean, cov = self.mean_and_variance(self.particles)
         return mean, cov
