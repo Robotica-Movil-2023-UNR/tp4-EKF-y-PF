@@ -4,15 +4,47 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
-            "name": "Python: Current File",
+            "name": "PF",
             "type": "python",
             "request": "launch",
             "program": "localization.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args" : ["--plot", "ekf", "--seed", "0", "--data-factor", "1", "--num-steps", "180", "--filter-factor", "1"]
+            "args": [
+                "--plot",
+                "pf",
+                "--seed",
+                "0",
+                "--data-factor",
+                "1",
+                "--num-steps",
+                "200",
+                "--filter-factor",
+                "1",
+                "--num-particles",
+                "100"
+            ]
+        },
+        {
+            "name": "EKF",
+            "type": "python",
+            "request": "launch",
+            "program": "localization.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--plot",
+                "ekf",
+                "--seed",
+                "0",
+                "--data-factor",
+                "1",
+                "--num-steps",
+                "200",
+                "--filter-factor",
+                "1"
+            ]
         }
     ]
 }
