@@ -30,8 +30,6 @@ class ExtendedKalmanFilter:
         # YOUR IMPLEMENTATION HERE
 
         # Ejecuto el paso de predición, tomando la estimación actual y el comando, sin ruido
-        # O VA CON RUIDO???????????
-        # u_noisy = env.sample_noisy_action(u, self.alphas)
         mu_pred = env.forward(self.mu, u)
         # Jacobiano del modelo de odometría respecto del estado
         G = env.G(self.mu, u)
@@ -45,7 +43,7 @@ class ExtendedKalmanFilter:
         # Calculo las mediciones esperadas
         z_hat = env.observe(mu_pred, marker_id)
         # El jacobiano de las mediciones
-        H = env.H(u, marker_id)
+        H = env.H(mu_pred, marker_id)
         S = H.dot(sigma_pred).dot(H.T) + self.beta
         # Ganancia del filtro
         K = sigma_pred.dot(H.T).dot(np.linalg.inv(S))
@@ -55,8 +53,6 @@ class ExtendedKalmanFilter:
         mu_corrected = mu_pred + K.dot(innovation)
         sigma_corrected = (np.eye(3) - K.dot(H)).dot(sigma_pred)
 
-        self.mu = mu_pred
-        self.sigma = sigma_pred
         self.mu = mu_corrected
         self.sigma = sigma_corrected
 
